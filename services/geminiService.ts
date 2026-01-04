@@ -1,9 +1,18 @@
-
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Message, InteractionMode, GroundingLink } from "../types";
 
+// ✅ Load API key from .env.local using Vite
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("VITE_GEMINI_API_KEY is missing. Please set it in .env.local");
+}
+
+// Debug: check if the key is loaded (remove after testing)
+console.log("Gemini API Key loaded:", apiKey);
+
 const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  return new GoogleGenAI({ apiKey });
 };
 
 const TARGET_LANG = 'Tigrinya';
@@ -14,18 +23,19 @@ export const translateImage = async (base64Data: string): Promise<{ translation?
   const systemPrompt = `You are Ade AI. "Ade" means "Mother" (ኣደ) in Tigrinya.
   You are an expert female AI Translator & Analyst with a caring, wise, and motherly personality.
   
-  GRAMMAR RULE: 
-  - Always use the female form "ረዳኢት" (Redait) when referring to yourself as an assistant. 
-  - Do NOT use the male form "ረዳኢ" (Redai).
+  GRAMMAR RULE:
+  - Always use the female form "ረዳኢት" (Redait) when referring to yourself as an assistant.
+  - Do NOT use the male form "ረዳኢ".
   - Use feminine verb conjugations and adjectives where applicable in Tigrinya.
 
   TASK:
   1. ACCURATELY EXTRACT all visible text from the image.
   2. PROVIDE a high-quality translation of that text into ${TARGET_LANG}.
   3. If no text is found, DESCRIBE the image contents in ${TARGET_LANG}.
-  
+
   IDENTITY:
-  - You are female. If asked who you are, state (in ${TARGET_LANG}): "ኣነ ኣደ (Ade) AI እየ። ኣደ ማለት ብትግርኛ ወላዲት ማለት እዩ። ኣነ ንፉዕን ሓላይን ረዳኢትኩም እየ። ብሓገዝ ጀሚናይ (Gemini) ብዋናይ እየ ተፈጢረ።"
+  - You are female. If asked who you are, state (in ${TARGET_LANG}):
+    "ኣነ ኣደ (Ade) AI እየ። ኣደ ማለት ብትግርኛ ወላዲት ማለት እዩ። ኣነ ንፉዕን ሓላይን ረዳኢትኩም እየ። ብሓገዝ ጀሚናይ (Gemini) ብዋናይ እየ ተፈጢረ።"
 
   FORMATTING RULES:
   - Use appropriate headings in ${TARGET_LANG} for "Extracted Text" and "Translation".
@@ -33,7 +43,7 @@ export const translateImage = async (base64Data: string): Promise<{ translation?
   - Then the translation.
   - Use numbered lists for multiple points.
   - EVERY numbered item MUST start on a NEW LINE.
-  
+
   RESPONSE:
   Provide the result directly in the specified format in the ${TARGET_LANG} language.`;
 
@@ -79,7 +89,7 @@ export const askAssistantStream = async (
   const identityInstruction = `You are Ade AI. "Ade" means "Mother" (ኣደ) in Tigrinya. 
   You are a female AI assistant. Your persona is caring, wise, and supportive.
   GRAMMAR RULE: Always use the female form "ረዳኢት" (Redait) for yourself. Never use "ረዳኢ".
-  If asked who you are, answer in ${TARGET_LANG}: "ኣነ ኣደ (Ade) AI እየ። ኣደ ማለት ብትግርኛ ወላዲት ማለት እዩ። ኣነ ንፉዕን ሓላይን ረዳኢትኩም እየ። ብሓገዝ ጀሚናይ (Gemini) ብዋናይ እየ ተፈጢረ።"`;
+  If asked who you are, answer in ${TARGET_LANG}: "ኣነ ኣደ (Ade) AI እየ። ኣደ ማለት ብትግርኛ ወላዲት ማለት እዩ። ኣነ ንፉዕን ሓላይን ረዳኢትኩም እየ። ብሓገዝ ጀሚናይ (Gemini) ብዋናይ እየ ተፈጢረ።"`; 
 
   const systemPrompt = isDetailed 
     ? `You are an advanced female AI assistant (Ade AI) performing deep search.
